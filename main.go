@@ -40,8 +40,15 @@ func main() {
 	mutex := sync.Mutex{}
 
 	gin.SetMode(gin.ReleaseMode)
-	r := gin.Default()
-	r.GET("/", func(c *gin.Context) {
+	appRouter := gin.Default()
+
+	metricRouter := gin.Default()
+	m := ginmetrics.GetMonitor()
+	m.UseWithoutExposingEndpoint(appRouter)
+	m.SetMetricPath("/metrics")
+	m.Expose(metricRouter)
+
+	appRouter.GET("/", func(c *gin.Context) {
 		mutex.Lock()
 		defer mutex.Unlock()
 		counter++
@@ -52,16 +59,11 @@ func main() {
 		})
 		slog.Info(fmt.Sprintf("Counter: %d", counter))
 	})
-	r.GET("/health", func(c *gin.Context) {
+	appRouter.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"status": "ok",
 		})
 	})
-
-	metricRouter := gin.Default()
-	m := ginmetrics.GetMonitor()
-	m.SetMetricPath("/metrics")
-	m.Use(metricRouter)
 
 	eg := errgroup.Group{}
 	eg.Go(func() error {
@@ -71,7 +73,7 @@ func main() {
 		return nil
 	})
 	eg.Go(func() error {
-		if err := r.Run(":8080"); err != nil {
+		if err := appRouter.Run(":8080"); err != nil {
 			return fmt.Errorf("failed to start server: %w", err)
 		}
 		return nil
