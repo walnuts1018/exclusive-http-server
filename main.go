@@ -17,7 +17,7 @@ func main() {
 	}))
 	slog.SetDefault(logger)
 
-	sleepTime := 100 * time.Millisecond
+	sleepTime := 0 * time.Second
 	sleeptimeEnv := os.Getenv("SLEEP_TIME")
 	if sleeptimeEnv != "" {
 		parsed, err := time.ParseDuration(sleeptimeEnv)
