@@ -42,6 +42,7 @@ func main() {
 		c.JSON(200, gin.H{
 			"counter": counter,
 		})
+		slog.Info(fmt.Sprintf("Counter: %d", counter))
 	})
 
 	slog.Info("Starting server on port 8080")
