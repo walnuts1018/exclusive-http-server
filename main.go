@@ -17,15 +17,28 @@ func main() {
 	}))
 	slog.SetDefault(logger)
 
+	sleepTime := 100 * time.Millisecond
+	sleeptimeEnv := os.Getenv("SLEEP_TIME")
+	if sleeptimeEnv != "" {
+		parsed, err := time.ParseDuration(sleeptimeEnv)
+		if err != nil {
+			slog.Info(fmt.Sprintf("Failed to parse SLEEP_TIME, using default: %v", err))
+		} else {
+			sleepTime = parsed
+		}
+	}
+	slog.Info(fmt.Sprintf("Using sleep time: %v", sleepTime))
+
 	counter := 0
 	mutex := sync.Mutex{}
 
+	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
 	r.GET("/", func(c *gin.Context) {
 		mutex.Lock()
 		defer mutex.Unlock()
 		counter++
-		time.Sleep(100 * time.Millisecond)
+		time.Sleep(sleepTime)
 		c.JSON(200, gin.H{
 			"counter": counter,
 		})
