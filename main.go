@@ -9,6 +9,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/lmittmann/tint"
+	"github.com/penglongli/gin-metrics/ginmetrics"
+	"golang.org/x/sync/errgroup"
 )
 
 func main() {
@@ -20,7 +22,6 @@ func main() {
 	podName := os.Getenv("POD_NAME")
 	if podName == "" {
 		slog.Error("POD_NAME is not set")
-		os.Exit(1)
 	}
 
 	sleepDuration := 0 * time.Second
@@ -57,8 +58,27 @@ func main() {
 		})
 	})
 
-	slog.Info("Starting server on port 8080")
-	if err := r.Run(":8080"); err != nil {
-		slog.Error(fmt.Sprintf("Failed to start server: %v", err))
+	metricRouter := gin.Default()
+	m := ginmetrics.GetMonitor()
+	m.SetMetricPath("/metrics")
+	m.Use(metricRouter)
+
+	eg := errgroup.Group{}
+	eg.Go(func() error {
+		if err := metricRouter.Run(":8081"); err != nil {
+			return fmt.Errorf("failed to start metrics server: %w", err)
+		}
+		return nil
+	})
+	eg.Go(func() error {
+		if err := r.Run(":8080"); err != nil {
+			return fmt.Errorf("failed to start server: %w", err)
+		}
+		return nil
+	})
+
+	if err := eg.Wait(); err != nil {
+		slog.Error(err.Error())
 	}
+
 }
