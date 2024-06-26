@@ -17,6 +17,12 @@ func main() {
 	}))
 	slog.SetDefault(logger)
 
+	podName := os.Getenv("POD_NAME")
+	if podName == "" {
+		slog.Error("POD_NAME is not set")
+		os.Exit(1)
+	}
+
 	sleepDuration := 0 * time.Second
 	sleepDurationEnv := os.Getenv("SLEEP_DURATION")
 	if sleepDurationEnv != "" {
@@ -41,6 +47,7 @@ func main() {
 		time.Sleep(sleepDuration)
 		c.JSON(200, gin.H{
 			"counter": counter,
+			"pod":     podName,
 		})
 		slog.Info(fmt.Sprintf("Counter: %d", counter))
 	})
