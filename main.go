@@ -59,7 +59,7 @@ func main() {
 		})
 		slog.Info(fmt.Sprintf("Counter: %d", counter))
 	})
-	appRouter.GET("/health", func(c *gin.Context) {
+	metricRouter.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"status": "ok",
 		})
