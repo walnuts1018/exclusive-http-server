@@ -17,17 +17,17 @@ func main() {
 	}))
 	slog.SetDefault(logger)
 
-	sleepTime := 0 * time.Second
-	sleeptimeEnv := os.Getenv("SLEEP_TIME")
-	if sleeptimeEnv != "" {
-		parsed, err := time.ParseDuration(sleeptimeEnv)
+	sleepDuration := 0 * time.Second
+	sleepDurationEnv := os.Getenv("SLEEP_DURATION")
+	if sleepDurationEnv != "" {
+		parsed, err := time.ParseDuration(sleepDurationEnv)
 		if err != nil {
-			slog.Info(fmt.Sprintf("Failed to parse SLEEP_TIME, using default: %v", err))
+			slog.Info(fmt.Sprintf("Failed to parse SLEEP_DURATION, using default: %v", err))
 		} else {
-			sleepTime = parsed
+			sleepDuration = parsed
 		}
 	}
-	slog.Info(fmt.Sprintf("Using sleep time: %v", sleepTime))
+	slog.Info(fmt.Sprintf("Using sleep time: %v", sleepDuration))
 
 	counter := 0
 	mutex := sync.Mutex{}
@@ -38,7 +38,7 @@ func main() {
 		mutex.Lock()
 		defer mutex.Unlock()
 		counter++
-		time.Sleep(sleepTime)
+		time.Sleep(sleepDuration)
 		c.JSON(200, gin.H{
 			"counter": counter,
 		})
