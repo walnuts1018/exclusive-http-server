@@ -44,6 +44,11 @@ func main() {
 		})
 		slog.Info(fmt.Sprintf("Counter: %d", counter))
 	})
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"status": "ok",
+		})
+	})
 
 	slog.Info("Starting server on port 8080")
 	if err := r.Run(":8080"); err != nil {
